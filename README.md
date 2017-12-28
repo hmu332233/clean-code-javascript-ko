@@ -1,7 +1,7 @@
 # clean-code-javascript
 
-* Updated date 2017.1.31
-* 현재 원문의 [ac6a51d](https://github.com/ryanmcdermott/clean-code-javascript/commit/ac6a51d640064ec4ac6cada7af477df8967dd193)
+* Updated date 2017.12.29
+* 현재 원문의 [00f2072](https://github.com/ryanmcdermott/clean-code-javascript/commit/00f20727045c4d7616d6083c8af48ad5cce4e01e)
 까지 반영되어 있습니다.
 
 ## 목차
@@ -10,18 +10,21 @@
   3. [함수(Functions)](#함수functions)
   4. [객체와 자료구조(Objects and Data Structures)](#객체와-자료구조objects-and-data-structures)
   5. [클래스(Classes)](#클래스classes)
-  6. [테스트(Testing)](#테스트testing)
-  7. [동시성(Concurrency)](#동시성concurrency)
-  8. [에러 처리(Error Handling)](#에러-처리error-handling)
-  9. [포맷팅(Formatting)](#포맷팅formatting)
-  10. [주석(Comments)](#주석comments)
-  11. [번역(Translation)](#번역translation)
-  
+  6. [SOLID](#solid)
+  7. [테스트(Testing)](#테스트testing)
+  8. [동시성(Concurrency)](#동시성concurrency)
+  9. [에러 처리(Error Handling)](#에러-처리error-handling)
+  10. [포맷팅(Formatting)](#포맷팅formatting)
+  11. [주석(Comments)](#주석comments)
+  12. [번역(Translation)](#번역translation)
+
 ## 소개(Introduction)
 ![코드를 읽을 때 소리 지르는 숫자로 소프트웨어 품질을 추정하는 유머 사진](http://www.osnews.com/images/comics/wtfm.jpg)
 
 이 글은 소프트웨어 방법론에 관한 책들 중 Robert C. Martin's의 책인 [*Clean Code*](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)에 있는 내용을 JavaScript 언어에 적용시켜 적은 글 입니다.
 이 글은 단순히 Style Guide가 아니라 JavaScript로 코드를 작성할때 읽기 쉽고, 재사용 가능하며 리팩토링 가능하게끔 작성하도록 도와줍니다.
+참고링크: [readable, reusable, and refactorable](https://github.com/ryanmcdermott/3rs-of-software-architecture)
+
 
 여기 있는 모든 원칙이 엄격히 지켜져야하는 것은 아니며, 보편적으로 통용되는 원칙은 아닙니다. 이것들은 지침일 뿐이며 `Clean Code`의 저자가 수년간 경험한 내용을 바탕으로 정리한 것입니다.
 
@@ -29,7 +32,7 @@
 그리고 소프트웨어 아키텍쳐가 건축설계 만큼이나 오래되었을때 우리는 아래 규칙들보다 더 엄격한 규칙들을 따라야 할지도 모릅니다.
 하지만 지금 당장은 이 가이드 라인을 당신과 당신 팀이 작성하는 JavaScript 코드의 품질을 평가하는 기준으로 삼으세요.
 
-한가지 더 덧붙이자면, 이 원칙들을 알게된다해서 당장 더 나은 개발자가 되는 것은 아니며 코드를 작성할 때 
+한가지 더 덧붙이자면, 이 원칙들을 알게된다해서 당장 더 나은 개발자가 되는 것은 아니며 코드를 작성할 때
 실수를 하지 않게 해주는 것은 아닙니다. 훌륭한 도자기들이 처음엔 말랑한 점토부터 시작하듯이 모든 코드들은 처음부터 완벽할 수 없습니다.
 하지만 당신은 팀원들과 같이 코드를 리뷰하며 점점 완벽하게 만들어가야 합니다. 당신이 처음 작성한 코드를 고칠 때 절대로 자신을 질타하지 마세요.
 대신 코드를 부수고 더 나은 코드를 만드세요!
@@ -79,7 +82,7 @@ setTimeout(blastOff, 86400000);
 
 **좋은 예**
 ```javascript
-// 대문자로 `const` 전역 변수를 선언하세요
+// 이것들을 대문자로된 상수로 선언하세요
 const MILLISECONDS_IN_A_DAY = 86400000;
 setTimeout(blastOff, MILLISECONDS_IN_A_DAY);
 ```
@@ -162,7 +165,7 @@ function paintCar(car) {
 **[⬆ 상단으로](#목차)**
 
 ### 기본 매개변수가 short circuiting 트릭이나 조건문 보다 깔끔합니다
-기본 매개변수는 종종 short circuiting 트릭보다 깔끔합니다. 기본 매개변수는 매개변수가 `undefined`일때만 
+기본 매개변수는 종종 short circuiting 트릭보다 깔끔합니다. 기본 매개변수는 매개변수가 `undefined`일때만
 적용됩니다. `''`, `""`, `false`, `null`, `0`, `NaN` 같은 `falsy`한 값들은 기본 매개변수가 적용되지 않습니다.
 
 **안좋은 예:**
@@ -194,7 +197,7 @@ function createMicrobrewery(name = 'Hipster Brew Co.') {
 JavaScript를 사용할 때 많은 보일러플레이트 없이 바로 객체를 만들 수 있습니다.
 그러므로 당신이 만약 많은 인자들을 사용해야 한다면 객체를 이용할 수 있습니다.
 
-함수가 기대하는 속성을 좀더 명확히 하기 위해서 es6의 비구조화(destructuring) 구문을 사용할 수 있고
+함수가 기대하는 속성을 좀더 명확히 하기 위해서 ES2015/ES6의 비구조화(destructuring) 구문을 사용할 수 있고
 이 구문에는 몇가지 장점이 있습니다.
 
 1. 어떤 사람이 그 함수의 시그니쳐(인자의 타입, 반환되는 값의 타입 등)를 볼 때 어떤 속성이 사용되는지
@@ -246,13 +249,13 @@ function emailClients(clients) {
 
 **좋은 예:**
 ```javascript
-function emailClients(clients) {
+function emailActiveClients(clients) {
   clients
-    .filter(isClientActive)
+    .filter(isActiveClient)
     .forEach(email);
 }
 
-function isClientActive(client) {
+function isActiveClient(client) {
   const clientRecord = database.lookup(client);
   return clientRecord.isActive();
 }
@@ -583,7 +586,7 @@ const addItemToCart = (cart, item) => {
 ### 전역 함수를 사용하지 마세요
 전역 환경을 사용하는 것은 JavaScript에서 나쁜 관행입니다. 왜냐하면 다른 라이브러리들과의 충돌이 일어날 수 있고,
 당신의 API를 쓰는 유저들은 운영환경에서 예외가 발생하기 전까지는 문제를 인지하지 못할 것이기 때문입니다. 예제를 하나 생각해봅시다.
-JavaScript의 네이티브 Array 메소드를 확장하여 두 배열 간의 차이를 보여줄 수있는 `diff` 메소드를 사용하려면 어떻게 해야할까요? 
+JavaScript의 네이티브 Array 메소드를 확장하여 두 배열 간의 차이를 보여줄 수있는 `diff` 메소드를 사용하려면 어떻게 해야할까요?
 새로운 함수를 `Array.prototype`에 쓸 수도 있지만, 똑같은 일을 시도한 다른 라이브러리와 충돌 할 수 있습니다.
 다른 라이브러리가 `diff` 메소드를 사용하여 첫번째 요소와 마지막 요소의 차이점을 찾으면 어떻게 될까요?
 이것이 그냥 ES2015/ES6의 classes를 사용해서 전역 `Array`를 상속해버리는 것이 훨씬 더 나은 이유입니다.
@@ -655,8 +658,8 @@ const programmerOutput = [
 ];
 
 const totalOutput = programmerOutput
-  .map(programmer => programmer.linesOfCode)
-  .reduce((acc, linesOfCode) => acc + linesOfCode, INITIAL_VALUE);
+  .map(output => output.linesOfCode)
+  .reduce((totalLines, lines) => totalLines + lines);
 ```
 **[⬆ 상단으로](#목차)**
 
@@ -797,7 +800,7 @@ function combine(val1, val2) {
       typeof val1 === 'string' && typeof val2 === 'string') {
     return val1 + val2;
   }
-  
+
   throw new Error('Must be of type String or Number');
 }
 ```
@@ -867,9 +870,7 @@ inventoryTracker('apples', req, 'www.inventory-awesome.io');
 
 ## **객체와 자료구조(Objects and Data Structures)**
 ### getter와 setter를 사용하세요
-JavaScript는 인터페이스와 타입을 가지고있지 않고 이러한 패턴을 적용하기가 힘듭니다.
-왜냐하면 `public`이나 `private`같은 키워드가 없기 때문이죠.
-그렇기 때문에 getter 및 setter를 사용하여 객체의 데이터에 접근하는 것이 객체의 속성을 찾는 것보다 훨씬 낫습니다.
+getter 및 setter를 사용하여 객체의 데이터에 접근하는 것이 객체의 속성을 찾는 것보다 훨씬 낫습니다.
 "왜요?"라고 물으실 수도 있겠습니다. 왜 그런지에 대해서 몇 가지 이유를 두서없이 적어봤습니다.
 
 * 객체의 속성을 얻는 것 이상의 많은 것을 하고싶을 때, 코드에서 모든 접근자를 찾아 바꾸고 할 필요가 없습니다.
@@ -880,49 +881,47 @@ JavaScript는 인터페이스와 타입을 가지고있지 않고 이러한 패�
 * 서버에서 객체 속성을 받아올 때 lazy load 할 수 있습니다.
 
 **안좋은 예:**
+**Bad:**
 ```javascript
-class BankAccount {
-  constructor() {
-    this.balance = 1000;
-  }
+function makeBankAccount() {
+  // ...
+
+  return {
+    balance: 0,
+    // ...
+  };
 }
 
-const bankAccount = new BankAccount();
-
-// 신발을 구매할 때...
-bankAccount.balance -= 100;
+const account = makeBankAccount();
+account.balance = 100;
 ```
 
-**좋은 예:**
+**Good:**
 ```javascript
-class BankAccount {
-  constructor(balance = 1000) {
-	   this._balance = balance;
+function makeBankAccount() {
+  // this one is private
+  let balance = 0;
+
+  // a "getter", made public via the returned object below
+  function getBalance() {
+    return balance;
   }
 
-  // getter/setter를 정의할 때 `get`, `set` 같은 접두사가 필요하지 않습니다.
-  set balance(amount) {
-      if (this.verifyIfAmountCanBeSetted(amount)) {
-        this._balance = amount;
-      }
-    }
-  
-  get balance() {
-    return this._balance;
+  // a "setter", made public via the returned object below
+  function setBalance(amount) {
+    // ... validate before updating the balance
+    balance = amount;
   }
 
-  verifyIfAmountCanBeSetted(val) {
+  return {
     // ...
-  }
+    getBalance,
+    setBalance,
+  };
 }
 
-const bankAccount = new BankAccount();
-    
-// 신발을 구매할 때...
-bankAccount.balance -= shoesPrice;
-
-// balance 값을 얻을 때
-let balance = bankAccount.balance;
+const account = makeBankAccount();
+account.setBalance(100);
 ```
 **[⬆ 상단으로](#목차)**
 
@@ -964,6 +963,220 @@ console.log(`Employee name: ${employee.getName()}`); // Employee name: John Doe
 **[⬆ 상단으로](#목차)**
 
 ## **클래스(Classes)**
+### ES5의 함수보다 ES2015/ES6의 클래스를 사용하세요
+기존 ES5의 클래스에서 이해하기 쉬운 상속, 구성 및 메소드 정의를 하는 건 매우 어렵습니다.
+매번 그런것은 아니지만 상속이 필요한 경우라면 클래스를 사용하는 것이 좋습니다.
+하지만 당신이 크고 더 복잡한 객체가 필요한 경우가 아니라면 클래스보다 작은 함수를 사용하세요.
+
+**Bad:**
+```javascript
+const Animal = function(age) {
+  if (!(this instanceof Animal)) {
+    throw new Error('Instantiate Animal with `new`');
+  }
+
+  this.age = age;
+};
+
+Animal.prototype.move = function move() {};
+
+const Mammal = function(age, furColor) {
+  if (!(this instanceof Mammal)) {
+    throw new Error('Instantiate Mammal with `new`');
+  }
+
+  Animal.call(this, age);
+  this.furColor = furColor;
+};
+
+Mammal.prototype = Object.create(Animal.prototype);
+Mammal.prototype.constructor = Mammal;
+Mammal.prototype.liveBirth = function liveBirth() {};
+
+const Human = function(age, furColor, languageSpoken) {
+  if (!(this instanceof Human)) {
+    throw new Error('Instantiate Human with `new`');
+  }
+
+  Mammal.call(this, age, furColor);
+  this.languageSpoken = languageSpoken;
+};
+
+Human.prototype = Object.create(Mammal.prototype);
+Human.prototype.constructor = Human;
+Human.prototype.speak = function speak() {};
+```
+
+**Good:**
+```javascript
+class Animal {
+  constructor(age) {
+    this.age = age;
+  }
+
+  move() { /* ... */ }
+}
+
+class Mammal extends Animal {
+  constructor(age, furColor) {
+    super(age);
+    this.furColor = furColor;
+  }
+
+  liveBirth() { /* ... */ }
+}
+
+class Human extends Mammal {
+  constructor(age, furColor, languageSpoken) {
+    super(age, furColor);
+    this.languageSpoken = languageSpoken;
+  }
+
+  speak() { /* ... */ }
+}
+```
+**[⬆ 상단으로](#목차)**
+
+
+### 메소드 체이닝을 사용하세요
+JavaScript에서 메소드 체이닝은 매우 유용한 패턴이며 jQuery나 Lodash같은 많은 라이브러리에서 이 패턴을 찾아볼 수 있습니다.
+이는 코드를 간결하고 이해하기 쉽게 만들어줍니다.
+이런 이유들로 메소드 체이닝을 쓰는 것을 권하고, 사용해본뒤 얼마나 코드가 깔끔해졌는지 꼭 확인 해보길 바랍니다.
+클래스 함수에서 단순히 모든 함수의 끝에 'this'를 리턴해주는 것으로 클래스 메소드를 추가로 연결할 수 있습니다.
+
+**Bad:**
+```javascript
+class Car {
+  constructor(make, model, color) {
+    this.make = make;
+    this.model = model;
+    this.color = color;
+  }
+
+  setMake(make) {
+    this.make = make;
+  }
+
+  setModel(model) {
+    this.model = model;
+  }
+
+  setColor(color) {
+    this.color = color;
+  }
+
+  save() {
+    console.log(this.make, this.model, this.color);
+  }
+}
+
+const car = new Car('Ford','F-150','red');
+car.setColor('pink');
+car.save();
+```
+
+**Good:**
+```javascript
+class Car {
+  constructor(make, model, color) {
+    this.make = make;
+    this.model = model;
+    this.color = color;
+  }
+
+  setMake(make) {
+    this.make = make;
+    // NOTE: Returning this for chaining
+    return this;
+  }
+
+  setModel(model) {
+    this.model = model;
+    // NOTE: Returning this for chaining
+    return this;
+  }
+
+  setColor(color) {
+    this.color = color;
+    // NOTE: Returning this for chaining
+    return this;
+  }
+
+  save() {
+    console.log(this.make, this.model, this.color);
+    // NOTE: Returning this for chaining
+    return this;
+  }
+}
+
+const car = new Car('Ford','F-150','red')
+  .setColor('pink')
+  .save();
+```
+**[⬆ 상단으로](#목차)**
+
+### 상속보단 조합(composition)을 사용하세요
+Gang of four의 [*Design Patterns*](https://en.wikipedia.org/wiki/Design_Patterns)에서 유명한
+전략으로 당신은 가능하다면 상속보다는 조합을 사용해야 합니다. 상속을 사용했을 때 얻을 수 있는 이득보다 조합을 사용했을 때 얻을 수
+있는 이득이 많기 때문입니다. 이 원칙의 요점은 당신이 계속 상속을 사용해서 코드를 작성하고자 할 때, 만약 조합을 이용하면
+더 코드를 잘 짤 수 있지 않을까 생각해보라는 것에 있습니다. 때때로는 이것이 맞는 전략이기 때문이죠.
+
+"그럼 대체 상속을 언제 사용해야 되는 건가요?"라고 물어 볼 수 있습니다. 이건 당신이 직면한 문제 상황에 달려있지만
+조합보다 상속을 쓰는게 더 좋을 만한 예시를 몇 개 들어 보겠습니다.
+
+1. 당신의 상속관계가 "is-a" 관계가 아니라 "has-a" 관계일 때 (사람->동물 vs. 유저->유저정보)
+2. 기반 클래스의 코드를 다시 사용할 수 있을 때 (인간은 모든 동물처럼 움직일 수 있습니다.)
+3. 기반 클래스를 수정하여 파생된 클래스 모두를 수정하고 싶을 때 (이동시 모든 동물이 소비하는 칼로리를 변경하고 싶을 때)
+
+**Bad:**
+```javascript
+class Employee {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+
+  // ...
+}
+
+// Bad because Employees "have" tax data. EmployeeTaxData is not a type of Employee
+class EmployeeTaxData extends Employee {
+  constructor(ssn, salary) {
+    super();
+    this.ssn = ssn;
+    this.salary = salary;
+  }
+
+  // ...
+}
+```
+
+**Good:**
+```javascript
+class EmployeeTaxData {
+  constructor(ssn, salary) {
+    this.ssn = ssn;
+    this.salary = salary;
+  }
+
+  // ...
+}
+
+class Employee {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+
+  setTaxData(ssn, salary) {
+    this.taxData = new EmployeeTaxData(ssn, salary);
+  }
+  // ...
+}
+```
+**[⬆ 상단으로](#목차)**
+
+## **SOLID**
 ### 단일 책임 원칙 (Single Responsibility Prinsiple, SRP)
 Clean Code에서 말하길 "클래스를 수정 할 때는 수정 해야하는 이유가 2개 이상 있으면 안됩니다".
 이것은 하나의 클래스에 많은 기능을 쑤셔넣는 것이나 다름 없습니다. 마치 비행기를 탈때 가방을 1개만 가지고 탈 수
@@ -1376,223 +1589,6 @@ inventoryTracker.requestItems();
 ```
 **[⬆ 상단으로](#목차)**
 
-### ES5의 함수보다 ES2015/ES6의 클래스를 사용하세요
-기존 ES5의 클래스에서 이해하기 쉬운 상속, 구성 및 메소드 정의를 하는 건 매우 어렵습니다.
-매번 그런것은 아니지만 상속이 필요한 경우라면 클래스를 사용하는 것이 좋습니다.
-하지만 당신이 크고 더 복잡한 객체가 필요한 경우가 아니라면 클래스보다 작은 함수를 사용하세요.
-
-**안좋은 예:**
-```javascript
-const Animal = function(age) {
-  if (!(this instanceof Animal)) {
-    throw new Error("Instantiate Animal with `new`");
-  }
-    
-  this.age = age;
-};
-
-Animal.prototype.move = function() {};
-
-const Mammal = function(age, furColor) {
-  if (!(this instanceof Mammal)) {
-    throw new Error("Instantiate Mammal with `new`");
-  }
-
-  Animal.call(this, age);
-  this.furColor = furColor;
-};
-
-Mammal.prototype = Object.create(Animal.prototype);
-Mammal.prototype.constructor = Mammal;
-Mammal.prototype.liveBirth = function liveBirth() {};
-
-const Human = function(age, furColor, languageSpoken) {
-  if (!(this instanceof Human)) {
-    throw new Error("Instantiate Human with `new`");
-  }
-
-  Mammal.call(this, age, furColor);
-  this.languageSpoken = languageSpoken;
-};
-
-Human.prototype = Object.create(Mammal.prototype);
-Human.prototype.constructor = Human;
-Human.prototype.speak = function speak() {};
-```
-
-**좋은 예:**
-```javascript
-class Animal {
-  constructor(age) {
-    this.age = age;
-  }
-
-  move() { /* ... */ }
-}
-
-class Mammal extends Animal {
-  constructor(age, furColor) {
-    super(age);
-    this.furColor = furColor;
-  }
-
-  liveBirth() { /* ... */ }
-}
-
-class Human extends Mammal {
-  constructor(age, furColor, languageSpoken) {
-    super(age, furColor);
-    this.languageSpoken = languageSpoken;
-  }
-
-  speak() { /* ... */ }
-}
-```
-**[⬆ 상단으로](#목차)**
-
-### 메소드 체이닝을 사용하세요
-JavaScript에서 메소드 체이닝은 매우 유용한 패턴이며 jQuery나 Lodash같은 많은 라이브러리에서 이 패턴을 찾아볼 수 있습니다.
-이는 코드를 간결하고 이해하기 쉽게 만들어줍니다.
-이런 이유들로 메소드 체이닝을 쓰는 것을 권하고, 사용해본뒤 얼마나 코드가 깔끔해졌는지 꼭 확인 해보길 바랍니다.
-클래스 함수에서 단순히 모든 함수의 끝에 'this'를 리턴해주는 것으로 클래스 메소드를 추가로 연결할 수 있습니다.
-
-**안좋은 예:**
-```javascript
-class Car {
-  constructor() {
-    this.make = 'Honda';
-    this.model = 'Accord';
-    this.color = 'white';
-  }
-
-  setMake(make) {
-    this.make = make;
-  }
-
-  setModel(model) {
-    this.model = model;
-  }
-
-  setColor(color) {
-    this.color = color;
-  }
-
-  save() {
-    console.log(this.make, this.model, this.color);
-  }
-}
-
-const car = new Car();
-car.setColor('pink');
-car.setMake('Ford');
-car.setModel('F-150');
-car.save();
-```
-
-**좋은 예:**
-```javascript
-class Car {
-  constructor() {
-    this.make = 'Honda';
-    this.model = 'Accord';
-    this.color = 'white';
-  }
-
-  setMake(make) {
-    this.make = make;
-    // 메모: 체이닝을 위해 this를 리턴합니다.
-    return this;
-  }
-
-  setModel(model) {
-    this.model = model;
-    // 메모: 체이닝을 위해 this를 리턴합니다.
-    return this;
-  }
-
-  setColor(color) {
-    this.color = color;
-    // 메모: 체이닝을 위해 this를 리턴합니다.
-    return this;
-  }
-
-  save() {
-    console.log(this.make, this.model, this.color);
-    // 메모: 체이닝을 위해 this를 리턴합니다.
-    return this;
-  }
-}
-
-const car = new Car()
-  .setColor('pink')
-  .setMake('Ford')
-  .setModel('F-150')
-  .save();
-```
-**[⬆ 상단으로](#목차)**
-
-### 상속보단 조합(composition)을 사용하세요
-Gang of four의 [*Design Patterns*](https://en.wikipedia.org/wiki/Design_Patterns)에서 유명한
-전략으로 당신은 가능하다면 상속보다는 조합을 사용해야 합니다. 상속을 사용했을 때 얻을 수 있는 이득보다 조합을 사용했을 때 얻을 수
-있는 이득이 많기 때문입니다. 이 원칙의 요점은 당신이 계속 상속을 사용해서 코드를 작성하고자 할 때, 만약 조합을 이용하면
-더 코드를 잘 짤 수 있지 않을까 생각해보라는 것에 있습니다. 때때로는 이것이 맞는 전략이기 때문이죠.
-
-"그럼 대체 상속을 언제 사용해야 되는 건가요?"라고 물어 볼 수 있습니다. 이건 당신이 직면한 문제 상황에 달려있지만
-조합보다 상속을 쓰는게 더 좋을 만한 예시를 몇 개 들어 보겠습니다.
-
-1. 당신의 상속관계가 "is-a" 관계가 아니라 "has-a" 관계일 때 (사람->동물 vs. 유저->유저정보)
-2. 기반 클래스의 코드를 다시 사용할 수 있을 때 (인간은 모든 동물처럼 움직일 수 있습니다.)
-3. 기반 클래스를 수정하여 파생된 클래스 모두를 수정하고 싶을 때 (이동시 모든 동물이 소비하는 칼로리를 변경하고 싶을 때)
-
-**안좋은 예:**
-```javascript
-class Employee {
-  constructor(name, email) {
-    this.name = name;
-    this.email = email;
-  }
-
-  // ...
-}
-
-// 이 코드가 안좋은 이유는 Employees가 tax data를 "가지고" 있기 때문입니다.
-// EmployeeTaxData는 Employee 타입이 아닙니다.
-class EmployeeTaxData extends Employee {
-  constructor(ssn, salary) {
-    super();
-    this.ssn = ssn;
-    this.salary = salary;
-  }
-
-  // ...
-}
-```
-
-**좋은 예:**
-```javascript
-class EmployeeTaxData {
-  constructor(ssn, salary) {
-    this.ssn = ssn;
-    this.salary = salary;
-  }
-  
-  // ...
-}
-
-class Employee {
-  constructor(name, email) {
-    this.name = name;
-    this.email = email;
-  }
-
-  setTaxData(ssn, salary) {
-    this.taxData = new EmployeeTaxData(ssn, salary);
-  }
-  // ...
-}
-```
-**[⬆ 상단으로](#목차)**
-
 ## **테스트(Testing)**
 테스트는 배포하는 것보다 중요합니다. 테스트 없이 배포한다는 것은 당신이 짜놓은 코드가 언제든 오작동해도 이상하지 않다는 얘기와 같습니다.
 테스트에 얼마나 시간을 투자할지는 당신이 함께 일하는 팀에 달려있지만 Coverage가 100%라는 것은 개발자들에게 높은 자신감과 안도감을 줍니다.
@@ -1697,7 +1693,7 @@ require('request-promise').get('https://en.wikipedia.org/wiki/Robert_Cecil_Marti
 ### Async/Await은 Promise보다 더욱 깔끔합니다
 Promise도 Callback에 비해 정말 깔끔하지만 ES2017/ES8에선 async와 await이 있습니다.
 이들은 Callback에대한 더욱 깔끔한 해결책을 줍니다. 오직 필요한 것은 함수앞에 `async`를 붙이는 것 뿐입니다.
-그러면 함수를 논리적으로 연결하기위해 더이상 `then`을 쓰지 않아도 됩니다. 
+그러면 함수를 논리적으로 연결하기위해 더이상 `then`을 쓰지 않아도 됩니다.
 만약 당신이 ES2017/ES8 사용할 수 있다면 이것을 사용하세요!
 
 **안좋은 예:**
@@ -1730,10 +1726,10 @@ async function getCleanCodeArticle() {
 **[⬆ 상단으로](#목차)**
 
 ## **에러 처리(Error Handling)**
-에러를 뱉는다는 것은 좋은 것입니다! 즉, 프로그램에서 무언가가 잘못되었을 때 런타임에서 성공적으로 확인되면 
-현재 스택에서 함수 실행을 중단하고 (노드에서) 프로세스를 종료하고 스택 추적으로 콘솔에서 사용자에게 
+에러를 뱉는다는 것은 좋은 것입니다! 즉, 프로그램에서 무언가가 잘못되었을 때 런타임에서 성공적으로 확인되면
+현재 스택에서 함수 실행을 중단하고 (노드에서) 프로세스를 종료하고 스택 추적으로 콘솔에서 사용자에게
 그 이유를 알려줍니다.
- 
+
 ### 단순히 에러를 확인만 하지마세요
 단순히 에러를 확인하는 것만으로 그 에러가 해결되거나 대응 할 수 있게 되는 것은 아닙니다.
 `console.log`를 통해 콘솔에 로그를 기록하는 것은 에러 로그를 잃어버리기 쉽기 때문에 좋은 방법이 아닙니다.
@@ -1974,7 +1970,7 @@ function hashIt(data) {
 
 ### 주석으로 된 코드를 남기지 마세요
 버전 관리 도구가 존재하기 때문에 코드를 주석으로 남길 이유가 없습니다.
- 
+
 **안좋은 예:**
 ```javascript
 doStuff();
@@ -2048,6 +2044,7 @@ const actions = function() {
 ```
 **[⬆ 상단으로](#목차)**
 
+
 ## 번역(Translation)
 
 다른 언어로도 읽을 수 있습니다:
@@ -2059,4 +2056,3 @@ const actions = function() {
   - ![ru](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Russia.png) **Russian**: [BoryaMogila/clean-code-javascript-ru/](https://github.com/BoryaMogila/clean-code-javascript-ru/)
 
 **[⬆ 상단으로](#목차)**
-
