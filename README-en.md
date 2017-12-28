@@ -1,4 +1,3 @@
-
 # clean-code-javascript
 
 ## Table of Contents
@@ -7,12 +6,13 @@
   3. [Functions](#functions)
   4. [Objects and Data Structures](#objects-and-data-structures)
   5. [Classes](#classes)
-  6. [Testing](#testing)
-  7. [Concurrency](#concurrency)
-  8. [Error Handling](#error-handling)
-  9. [Formatting](#formatting)
-  10. [Comments](#comments)
-  11. [Translation](#translation)
+  6. [SOLID](#solid)
+  7. [Testing](#testing)
+  8. [Concurrency](#concurrency)
+  9. [Error Handling](#error-handling)
+  10. [Formatting](#formatting)
+  11. [Comments](#comments)
+  12. [Translation](#translation)
 
 ## Introduction
 ![Humorous image of software quality estimation as a count of how many expletives
@@ -21,7 +21,7 @@ you shout when reading code](http://www.osnews.com/images/comics/wtfm.jpg)
 Software engineering principles, from Robert C. Martin's book
 [*Clean Code*](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882),
 adapted for JavaScript. This is not a style guide. It's a guide to producing
-readable, reusable, and refactorable software in JavaScript.
+[readable, reusable, and refactorable](https://github.com/ryanmcdermott/3rs-of-software-architecture) software in JavaScript.
 
 Not every principle herein has to be strictly followed, and even fewer will be
 universally agreed upon. These are guidelines and nothing more, but they are
@@ -88,7 +88,7 @@ setTimeout(blastOff, 86400000);
 
 **Good:**
 ```javascript
-// Declare them as capitalized `const` globals.
+// Declare them as capitalized named constants.
 const MILLISECONDS_IN_A_DAY = 86400000;
 
 setTimeout(blastOff, MILLISECONDS_IN_A_DAY);
@@ -216,7 +216,7 @@ Since JavaScript allows you to make objects on the fly, without a lot of class
 boilerplate, you can use an object if you are finding yourself needing a
 lot of arguments.
 
-To make it obvious what properties the function expects, you can use the es6
+To make it obvious what properties the function expects, you can use the ES2015/ES6
 destructuring syntax. This has a few advantages:
 
 1. When someone looks at the function signature, it's immediately clear what
@@ -272,13 +272,13 @@ function emailClients(clients) {
 
 **Good:**
 ```javascript
-function emailClients(clients) {
+function emailActiveClients(clients) {
   clients
-    .filter(isClientActive)
+    .filter(isActiveClient)
     .forEach(email);
 }
 
-function isClientActive(client) {
+function isActiveClient(client) {
   const clientRecord = database.lookup(client);
   return clientRecord.isActive();
 }
@@ -295,7 +295,7 @@ function addToDate(date, month) {
 
 const date = new Date();
 
-// It's hard to to tell from the function name what is added
+// It's hard to tell from the function name what is added
 addToDate(date, 1);
 ```
 
@@ -440,17 +440,19 @@ function showEmployeeList(employees) {
     const expectedSalary = employee.calculateExpectedSalary();
     const experience = employee.getExperience();
 
-    let portfolio = employee.getGithubLink();
-
-    if (employee.type === 'manager') {
-      portfolio = employee.getMBAProjects();
-    }
-
     const data = {
       expectedSalary,
-      experience,
-      portfolio
+      experience
     };
+
+    switch (employee.type) {
+      case 'manager':
+        data.portfolio = employee.getMBAProjects();
+        break;
+      case 'developer':
+        data.githubLink = employee.getGithubLink();
+        break;
+    }
 
     render(data);
   });
@@ -473,7 +475,7 @@ function createMenu(config) {
   config.title = config.title || 'Foo';
   config.body = config.body || 'Bar';
   config.buttonText = config.buttonText || 'Baz';
-  config.cancellable = config.cancellable === undefined ? config.cancellable : true;
+  config.cancellable = config.cancellable !== undefined ? config.cancellable : true;
 }
 
 createMenu(menuConfig);
@@ -578,7 +580,7 @@ console.log(newName); // ['Ryan', 'McDermott'];
 
 ### Avoid Side Effects (part 2)
 In JavaScript, primitives are passed by value and objects/arrays are passed by
-reference. In the case of objects and arrays, if our function makes a change
+reference. In the case of objects and arrays, if your function makes a change
 in a shopping cart array, for example, by adding an item to purchase,
 then any other function that uses that `cart` array will be affected by this
 addition. That may be great, however it can be bad too. Let's imagine a bad
@@ -600,7 +602,7 @@ holding onto a reference of the shopping cart will be affected by any changes.
 
 Two caveats to mention to this approach:
   1. There might be cases where you actually want to modify the input object,
-but when you adopt this programming practice you will find that those case
+but when you adopt this programming practice you will find that those cases
 are pretty rare. Most things can be refactored to have no side effects!
 
   2. Cloning big objects can be very expensive in terms of performance. Luckily,
@@ -619,7 +621,7 @@ const addItemToCart = (cart, item) => {
 **Good:**
 ```javascript
 const addItemToCart = (cart, item) => {
-  return [...cart, { item, date : Date.now() }];
+  return [...cart, { item, date: Date.now() }];
 };
 ```
 
@@ -657,7 +659,7 @@ class SuperArray extends Array {
 
 ### Favor functional programming over imperative programming
 JavaScript isn't a functional language in the way that Haskell is, but it has
-a functional flavor to it. Functional languages are cleaner and easier to test.
+a functional flavor to it. Functional languages can be cleaner and easier to test.
 Favor this style of programming when you can.
 
 **Bad:**
@@ -703,11 +705,9 @@ const programmerOutput = [
   }
 ];
 
-const INITIAL_VALUE = 0;
-
 const totalOutput = programmerOutput
-  .map((programmer) => programmer.linesOfCode)
-  .reduce((acc, linesOfCode) => acc + linesOfCode, INITIAL_VALUE);
+  .map(output => output.linesOfCode)
+  .reduce((totalLines, lines) => totalLines + lines);
 ```
 **[⬆ back to top](#table-of-contents)**
 
@@ -839,7 +839,7 @@ function travelToTexas(vehicle) {
 **[⬆ back to top](#table-of-contents)**
 
 ### Avoid type-checking (part 2)
-If you are working with basic primitive values like strings, integers, and arrays,
+If you are working with basic primitive values like strings and integers,
 and you can't use polymorphism but you still feel the need to type-check,
 you should consider using TypeScript. It is an excellent alternative to normal
 JavaScript, as it provides you with static typing on top of standard JavaScript
@@ -927,9 +927,7 @@ inventoryTracker('apples', req, 'www.inventory-awesome.io');
 
 ## **Objects and Data Structures**
 ### Use getters and setters
-JavaScript doesn't have interfaces or types so it is very hard to enforce this
-pattern, because we don't have keywords like `public` and `private`. As it is,
-using getters and setters to access data on objects is far better than simply
+Using getters and setters to access data on objects could be better than simply
 looking for a property on an object. "Why?" you might ask. Well, here's an
 unorganized list of reasons why:
 
@@ -938,56 +936,51 @@ to look up and change every accessor in your codebase.
 * Makes adding validation simple when doing a `set`.
 * Encapsulates the internal representation.
 * Easy to add logging and error handling when getting and setting.
-* Inheriting this class, you can override default functionality.
 * You can lazy load your object's properties, let's say getting it from a
 server.
 
 
 **Bad:**
 ```javascript
-class BankAccount {
-  constructor() {
-    this.balance = 1000;
-  }
+function makeBankAccount() {
+  // ...
+
+  return {
+    balance: 0,
+    // ...
+  };
 }
 
-const bankAccount = new BankAccount();
-
-// Buy shoes...
-bankAccount.balance -= 100;
+const account = makeBankAccount();
+account.balance = 100;
 ```
 
 **Good:**
 ```javascript
-class BankAccount {
-  constructor(balance = 1000) {
-    this._balance = balance;
+function makeBankAccount() {
+  // this one is private
+  let balance = 0;
+
+  // a "getter", made public via the returned object below
+  function getBalance() {
+    return balance;
   }
 
-  // It doesn't have to be prefixed with `get` or `set` to be a getter/setter
-  set balance(amount) {
-    if (this.verifyIfAmountCanBeSetted(amount)) {
-      this._balance = amount;
-    }
+  // a "setter", made public via the returned object below
+  function setBalance(amount) {
+    // ... validate before updating the balance
+    balance = amount;
   }
 
-  get balance() {
-    return this._balance;
-  }
-
-  verifyIfAmountCanBeSetted(val) {
+  return {
     // ...
-  }
+    getBalance,
+    setBalance,
+  };
 }
 
-const bankAccount = new BankAccount();
-
-// Buy shoes...
-bankAccount.balance -= shoesPrice;
-
-// Get balance
-let balance = bankAccount.balance;
-
+const account = makeBankAccount();
+account.setBalance(100);
 ```
 **[⬆ back to top](#table-of-contents)**
 
@@ -1031,15 +1024,236 @@ console.log(`Employee name: ${employee.getName()}`); // Employee name: John Doe
 
 
 ## **Classes**
+### Prefer ES2015/ES6 classes over ES5 plain functions
+It's very difficult to get readable class inheritance, construction, and method
+definitions for classical ES5 classes. If you need inheritance (and be aware
+that you might not), then prefer ES2015/ES6 classes. However, prefer small functions over
+classes until you find yourself needing larger and more complex objects.
+
+**Bad:**
+```javascript
+const Animal = function(age) {
+  if (!(this instanceof Animal)) {
+    throw new Error('Instantiate Animal with `new`');
+  }
+
+  this.age = age;
+};
+
+Animal.prototype.move = function move() {};
+
+const Mammal = function(age, furColor) {
+  if (!(this instanceof Mammal)) {
+    throw new Error('Instantiate Mammal with `new`');
+  }
+
+  Animal.call(this, age);
+  this.furColor = furColor;
+};
+
+Mammal.prototype = Object.create(Animal.prototype);
+Mammal.prototype.constructor = Mammal;
+Mammal.prototype.liveBirth = function liveBirth() {};
+
+const Human = function(age, furColor, languageSpoken) {
+  if (!(this instanceof Human)) {
+    throw new Error('Instantiate Human with `new`');
+  }
+
+  Mammal.call(this, age, furColor);
+  this.languageSpoken = languageSpoken;
+};
+
+Human.prototype = Object.create(Mammal.prototype);
+Human.prototype.constructor = Human;
+Human.prototype.speak = function speak() {};
+```
+
+**Good:**
+```javascript
+class Animal {
+  constructor(age) {
+    this.age = age;
+  }
+
+  move() { /* ... */ }
+}
+
+class Mammal extends Animal {
+  constructor(age, furColor) {
+    super(age);
+    this.furColor = furColor;
+  }
+
+  liveBirth() { /* ... */ }
+}
+
+class Human extends Mammal {
+  constructor(age, furColor, languageSpoken) {
+    super(age, furColor);
+    this.languageSpoken = languageSpoken;
+  }
+
+  speak() { /* ... */ }
+}
+```
+**[⬆ back to top](#table-of-contents)**
+
+
+### Use method chaining
+This pattern is very useful in JavaScript and you see it in many libraries such
+as jQuery and Lodash. It allows your code to be expressive, and less verbose.
+For that reason, I say, use method chaining and take a look at how clean your code
+will be. In your class functions, simply return `this` at the end of every function,
+and you can chain further class methods onto it.
+
+**Bad:**
+```javascript
+class Car {
+  constructor(make, model, color) {
+    this.make = make;
+    this.model = model;
+    this.color = color;
+  }
+
+  setMake(make) {
+    this.make = make;
+  }
+
+  setModel(model) {
+    this.model = model;
+  }
+
+  setColor(color) {
+    this.color = color;
+  }
+
+  save() {
+    console.log(this.make, this.model, this.color);
+  }
+}
+
+const car = new Car('Ford','F-150','red');
+car.setColor('pink');
+car.save();
+```
+
+**Good:**
+```javascript
+class Car {
+  constructor(make, model, color) {
+    this.make = make;
+    this.model = model;
+    this.color = color;
+  }
+
+  setMake(make) {
+    this.make = make;
+    // NOTE: Returning this for chaining
+    return this;
+  }
+
+  setModel(model) {
+    this.model = model;
+    // NOTE: Returning this for chaining
+    return this;
+  }
+
+  setColor(color) {
+    this.color = color;
+    // NOTE: Returning this for chaining
+    return this;
+  }
+
+  save() {
+    console.log(this.make, this.model, this.color);
+    // NOTE: Returning this for chaining
+    return this;
+  }
+}
+
+const car = new Car('Ford','F-150','red')
+  .setColor('pink')
+  .save();
+```
+**[⬆ back to top](#table-of-contents)**
+
+### Prefer composition over inheritance
+As stated famously in [*Design Patterns*](https://en.wikipedia.org/wiki/Design_Patterns) by the Gang of Four,
+you should prefer composition over inheritance where you can. There are lots of
+good reasons to use inheritance and lots of good reasons to use composition.
+The main point for this maxim is that if your mind instinctively goes for
+inheritance, try to think if composition could model your problem better. In some
+cases it can.
+
+You might be wondering then, "when should I use inheritance?" It
+depends on your problem at hand, but this is a decent list of when inheritance
+makes more sense than composition:
+
+1. Your inheritance represents an "is-a" relationship and not a "has-a"
+relationship (Human->Animal vs. User->UserDetails).
+2. You can reuse code from the base classes (Humans can move like all animals).
+3. You want to make global changes to derived classes by changing a base class.
+(Change the caloric expenditure of all animals when they move).
+
+**Bad:**
+```javascript
+class Employee {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+
+  // ...
+}
+
+// Bad because Employees "have" tax data. EmployeeTaxData is not a type of Employee
+class EmployeeTaxData extends Employee {
+  constructor(ssn, salary) {
+    super();
+    this.ssn = ssn;
+    this.salary = salary;
+  }
+
+  // ...
+}
+```
+
+**Good:**
+```javascript
+class EmployeeTaxData {
+  constructor(ssn, salary) {
+    this.ssn = ssn;
+    this.salary = salary;
+  }
+
+  // ...
+}
+
+class Employee {
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+  }
+
+  setTaxData(ssn, salary) {
+    this.taxData = new EmployeeTaxData(ssn, salary);
+  }
+  // ...
+}
+```
+**[⬆ back to top](#table-of-contents)**
+
+## **SOLID**
 ### Single Responsibility Principle (SRP)
 As stated in Clean Code, "There should never be more than one reason for a class
 to change". It's tempting to jam-pack a class with a lot of functionality, like
 when you can only take one suitcase on your flight. The issue with this is
 that your class won't be conceptually cohesive and it will give it many reasons
 to change. Minimizing the amount of times you need to change a class is important.
-It's important because if too much functionality is in one class and you modify a piece of it,
-it can be difficult to understand how that will affect other dependent modules in
-your codebase.
+It's important because if too much functionality is in one class and you modify
+a piece of it, it can be difficult to understand how that will affect other
+dependent modules in your codebase.
 
 **Bad:**
 ```javascript
@@ -1175,7 +1389,6 @@ class HttpRequester {
 ```
 **[⬆ back to top](#table-of-contents)**
 
-
 ### Liskov Substitution Principle (LSP)
 This is a scary term for a very simple concept. It's formally defined as "If S
 is a subtype of T, then objects of type T may be replaced with objects of type S
@@ -1235,7 +1448,7 @@ function renderLargeRectangles(rectangles) {
   rectangles.forEach((rectangle) => {
     rectangle.setWidth(4);
     rectangle.setHeight(5);
-    const area = rectangle.getArea(); // BAD: Will return 25 for Square. Should be 20.
+    const area = rectangle.getArea(); // BAD: Returns 25 for Square. Should be 20.
     rectangle.render(area);
   });
 }
@@ -1281,10 +1494,10 @@ class Square extends Shape {
 
 function renderLargeShapes(shapes) {
   shapes.forEach((shape) => {
-      const area = shape.getArea();
-      shape.render(area);
-    });
-  }
+    const area = shape.getArea();
+    shape.render(area);
+  });
+}
 
 const shapes = [new Rectangle(4, 5), new Rectangle(4, 5), new Square(5)];
 renderLargeShapes(shapes);
@@ -1303,7 +1516,8 @@ duck typing.
 A good example to look at that demonstrates this principle in JavaScript is for
 classes that require large settings objects. Not requiring clients to setup
 huge amounts of options is beneficial, because most of the time they won't need
-all of the settings. Making them optional helps prevent having a "fat interface".
+all of the settings. Making them optional helps prevent having a
+"fat interface".
 
 **Bad:**
 ```javascript
@@ -1372,7 +1586,7 @@ depend on abstractions.
 2. Abstractions should not depend upon details. Details should depend on
 abstractions.
 
-This can be hard to understand at first, but if you've worked with Angular.js,
+This can be hard to understand at first, but if you've worked with AngularJS,
 you've seen an implementation of this principle in the form of Dependency
 Injection (DI). While they are not identical concepts, DIP keeps high-level
 modules from knowing the details of its low-level modules and setting them up.
@@ -1460,230 +1674,6 @@ inventoryTracker.requestItems();
 ```
 **[⬆ back to top](#table-of-contents)**
 
-### Prefer ES2015/ES6 classes over ES5 plain functions
-It's very difficult to get readable class inheritance, construction, and method
-definitions for classical ES5 classes. If you need inheritance (and be aware
-that you might not), then prefer classes. However, prefer small functions over
-classes until you find yourself needing larger and more complex objects.
-
-**Bad:**
-```javascript
-const Animal = function(age) {
-  if (!(this instanceof Animal)) {
-    throw new Error('Instantiate Animal with `new`');
-  }
-
-  this.age = age;
-};
-
-Animal.prototype.move = function move() {};
-
-const Mammal = function(age, furColor) {
-  if (!(this instanceof Mammal)) {
-    throw new Error('Instantiate Mammal with `new`');
-  }
-
-  Animal.call(this, age);
-  this.furColor = furColor;
-};
-
-Mammal.prototype = Object.create(Animal.prototype);
-Mammal.prototype.constructor = Mammal;
-Mammal.prototype.liveBirth = function liveBirth() {};
-
-const Human = function(age, furColor, languageSpoken) {
-  if (!(this instanceof Human)) {
-    throw new Error('Instantiate Human with `new`');
-  }
-
-  Mammal.call(this, age, furColor);
-  this.languageSpoken = languageSpoken;
-};
-
-Human.prototype = Object.create(Mammal.prototype);
-Human.prototype.constructor = Human;
-Human.prototype.speak = function speak() {};
-```
-
-**Good:**
-```javascript
-class Animal {
-  constructor(age) {
-    this.age = age;
-  }
-
-  move() { /* ... */ }
-}
-
-class Mammal extends Animal {
-  constructor(age, furColor) {
-    super(age);
-    this.furColor = furColor;
-  }
-
-  liveBirth() { /* ... */ }
-}
-
-class Human extends Mammal {
-  constructor(age, furColor, languageSpoken) {
-    super(age, furColor);
-    this.languageSpoken = languageSpoken;
-  }
-
-  speak() { /* ... */ }
-}
-```
-**[⬆ back to top](#table-of-contents)**
-
-
-### Use method chaining
-This pattern is very useful in JavaScript and you see it in many libraries such
-as jQuery and Lodash. It allows your code to be expressive, and less verbose.
-For that reason, I say, use method chaining and take a look at how clean your code
-will be. In your class functions, simply return `this` at the end of every function,
-and you can chain further class methods onto it.
-
-**Bad:**
-```javascript
-class Car {
-  constructor() {
-    this.make = 'Honda';
-    this.model = 'Accord';
-    this.color = 'white';
-  }
-
-  setMake(make) {
-    this.make = make;
-  }
-
-  setModel(model) {
-    this.model = model;
-  }
-
-  setColor(color) {
-    this.color = color;
-  }
-
-  save() {
-    console.log(this.make, this.model, this.color);
-  }
-}
-
-const car = new Car();
-car.setColor('pink');
-car.setMake('Ford');
-car.setModel('F-150');
-car.save();
-```
-
-**Good:**
-```javascript
-class Car {
-  constructor() {
-    this.make = 'Honda';
-    this.model = 'Accord';
-    this.color = 'white';
-  }
-
-  setMake(make) {
-    this.make = make;
-    // NOTE: Returning this for chaining
-    return this;
-  }
-
-  setModel(model) {
-    this.model = model;
-    // NOTE: Returning this for chaining
-    return this;
-  }
-
-  setColor(color) {
-    this.color = color;
-    // NOTE: Returning this for chaining
-    return this;
-  }
-
-  save() {
-    console.log(this.make, this.model, this.color);
-    // NOTE: Returning this for chaining
-    return this;
-  }
-}
-
-const car = new Car()
-  .setColor('pink')
-  .setMake('Ford')
-  .setModel('F-150')
-  .save();
-```
-**[⬆ back to top](#table-of-contents)**
-
-### Prefer composition over inheritance
-As stated famously in [*Design Patterns*](https://en.wikipedia.org/wiki/Design_Patterns) by the Gang of Four,
-you should prefer composition over inheritance where you can. There are lots of
-good reasons to use inheritance and lots of good reasons to use composition.
-The main point for this maxim is that if your mind instinctively goes for
-inheritance, try to think if composition could model your problem better. In some
-cases it can.
-
-You might be wondering then, "when should I use inheritance?" It
-depends on your problem at hand, but this is a decent list of when inheritance
-makes more sense than composition:
-
-1. Your inheritance represents an "is-a" relationship and not a "has-a"
-relationship (Human->Animal vs. User->UserDetails).
-2. You can reuse code from the base classes (Humans can move like all animals).
-3. You want to make global changes to derived classes by changing a base class.
-(Change the caloric expenditure of all animals when they move).
-
-**Bad:**
-```javascript
-class Employee {
-  constructor(name, email) {
-    this.name = name;
-    this.email = email;
-  }
-
-  // ...
-}
-
-// Bad because Employees "have" tax data. EmployeeTaxData is not a type of Employee
-class EmployeeTaxData extends Employee {
-  constructor(ssn, salary) {
-    super();
-    this.ssn = ssn;
-    this.salary = salary;
-  }
-
-  // ...
-}
-```
-
-**Good:**
-```javascript
-class EmployeeTaxData {
-  constructor(ssn, salary) {
-    this.ssn = ssn;
-    this.salary = salary;
-  }
-
-  // ...
-}
-
-class Employee {
-  constructor(name, email) {
-    this.name = name;
-    this.email = email;
-  }
-
-  setTaxData(ssn, salary) {
-    this.taxData = new EmployeeTaxData(ssn, salary);
-  }
-  // ...
-}
-```
-**[⬆ back to top](#table-of-contents)**
-
 ## **Testing**
 Testing is more important than shipping. If you have no tests or an
 inadequate amount, then every time you ship code you won't be sure that you
@@ -1693,8 +1683,7 @@ you achieve very high confidence and developer peace of mind. This means that
 in addition to having a great testing framework, you also need to use a
 [good coverage tool](http://gotwarlost.github.io/istanbul/).
 
-There's no excuse to not write tests. There's [plenty of good JS test frameworks]
-(http://jstherightway.org/#testing-tools), so find one that your team prefers.
+There's no excuse to not write tests. There are [plenty of good JS test frameworks](http://jstherightway.org/#testing-tools), so find one that your team prefers.
 When you find one that works for your team, then aim to always write tests
 for every new feature/module you introduce. If your preferred method is
 Test Driven Development (TDD), that is great, but the main point is to just
@@ -1705,7 +1694,7 @@ or refactoring an existing one.
 
 **Bad:**
 ```javascript
-const assert = require('assert');
+import assert from 'assert';
 
 describe('MakeMomentJSGreatAgain', () => {
   it('handles date boundaries', () => {
@@ -1728,7 +1717,7 @@ describe('MakeMomentJSGreatAgain', () => {
 
 **Good:**
 ```javascript
-const assert = require('assert');
+import assert from 'assert';
 
 describe('MakeMomentJSGreatAgain', () => {
   it('handles 30-day months', () => {
@@ -1759,11 +1748,14 @@ Promises are a built-in global type. Use them!
 
 **Bad:**
 ```javascript
-require('request').get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin', (requestErr, response) => {
+import { get } from 'request';
+import { writeFile } from 'fs';
+
+get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin', (requestErr, response) => {
   if (requestErr) {
     console.error(requestErr);
   } else {
-    require('fs').writeFile('article.html', response.body, (writeErr) => {
+    writeFile('article.html', response.body, (writeErr) => {
       if (writeErr) {
         console.error(writeErr);
       } else {
@@ -1777,9 +1769,12 @@ require('request').get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin', (req
 
 **Good:**
 ```javascript
-require('request-promise').get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
+import { get } from 'request';
+import { writeFile } from 'fs';
+
+get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
   .then((response) => {
-    return require('fs-promise').writeFile('article.html', response);
+    return writeFile('article.html', response);
   })
   .then(() => {
     console.log('File written');
@@ -1800,9 +1795,12 @@ today!
 
 **Bad:**
 ```javascript
-require('request-promise').get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
+import { get } from 'request-promise';
+import { writeFile } from 'fs-promise';
+
+get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin')
   .then((response) => {
-    return require('fs-promise').writeFile('article.html', response);
+    return writeFile('article.html', response);
   })
   .then(() => {
     console.log('File written');
@@ -1815,10 +1813,13 @@ require('request-promise').get('https://en.wikipedia.org/wiki/Robert_Cecil_Marti
 
 **Good:**
 ```javascript
+import { get } from 'request-promise';
+import { writeFile } from 'fs-promise';
+
 async function getCleanCodeArticle() {
   try {
-    const response = await require('request-promise').get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin');
-    await require('fs-promise').writeFile('article.html', response);
+    const response = await get('https://en.wikipedia.org/wiki/Robert_Cecil_Martin');
+    await writeFile('article.html', response);
     console.log('File written');
   } catch(err) {
     console.error(err);
@@ -1873,29 +1874,29 @@ from `try/catch`.
 **Bad:**
 ```javascript
 getdata()
-.then((data) => {
-  functionThatMightThrow(data);
-})
-.catch((error) => {
-  console.log(error);
-});
+  .then((data) => {
+    functionThatMightThrow(data);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
 ```
 
 **Good:**
 ```javascript
 getdata()
-.then((data) => {
-  functionThatMightThrow(data);
-})
-.catch((error) => {
-  // One option (more noisy than console.log):
-  console.error(error);
-  // Another option:
-  notifyUserOfError(error);
-  // Another option:
-  reportErrorToService(error);
-  // OR do all three!
-});
+  .then((data) => {
+    functionThatMightThrow(data);
+  })
+  .catch((error) => {
+    // One option (more noisy than console.log):
+    console.error(error);
+    // Another option:
+    notifyUserOfError(error);
+    // Another option:
+    reportErrorToService(error);
+    // OR do all three!
+  });
 ```
 
 **[⬆ back to top](#table-of-contents)**
@@ -1936,8 +1937,8 @@ class Alpaca {}
 const DAYS_IN_WEEK = 7;
 const DAYS_IN_MONTH = 30;
 
-const songs = ['Back In Black', 'Stairway to Heaven', 'Hey Jude'];
-const artists = ['ACDC', 'Led Zeppelin', 'The Beatles'];
+const SONGS = ['Back In Black', 'Stairway to Heaven', 'Hey Jude'];
+const ARTISTS = ['ACDC', 'Led Zeppelin', 'The Beatles'];
 
 function eraseDatabase() {}
 function restoreDatabase() {}
@@ -1988,7 +1989,7 @@ class PerformanceReview {
   }
 }
 
-const review = new PerformanceReview(user);
+const review = new PerformanceReview(employee);
 review.perfReview();
 ```
 
@@ -2159,10 +2160,19 @@ const actions = function() {
 This is also available in other languages:
 
   - ![br](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Brazil.png) **Brazilian Portuguese**: [fesnt/clean-code-javascript](https://github.com/fesnt/clean-code-javascript)
-  - ![cn](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/China.png) **Chinese**: [alivebao/clean-code-js](https://github.com/alivebao/clean-code-js)
+  - ![es](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Uruguay.png) **Spanish**: [andersontr15/clean-code-javascript](https://github.com/andersontr15/clean-code-javascript-es)
+  - ![cn](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/China.png) **Chinese**:
+    - [alivebao/clean-code-js](https://github.com/alivebao/clean-code-js)
+    - [beginor/clean-code-javascript](https://github.com/beginor/clean-code-javascript)
   - ![de](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Germany.png) **German**: [marcbruederlin/clean-code-javascript](https://github.com/marcbruederlin/clean-code-javascript)
   - ![kr](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/South-Korea.png) **Korean**: [qkraudghgh/clean-code-javascript-ko](https://github.com/qkraudghgh/clean-code-javascript-ko)
-  - ![ru](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Russia.png) **Russian**: [BoryaMogila/clean-code-javascript-ru/](https://github.com/BoryaMogila/clean-code-javascript-ru/)
-
+  - ![pl](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Poland.png) **Polish**: [greg-dev/clean-code-javascript-pl](https://github.com/greg-dev/clean-code-javascript-pl)
+  - ![ru](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Russia.png) **Russian**:
+    - [BoryaMogila/clean-code-javascript-ru/](https://github.com/BoryaMogila/clean-code-javascript-ru/)
+    - [maksugr/clean-code-javascript](https://github.com/maksugr/clean-code-javascript)
+  - ![vi](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Vietnam.png) **Vietnamese**: [hienvd/clean-code-javascript/](https://github.com/hienvd/clean-code-javascript/)
+  - ![ja](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Japan.png) **Japanese**: [mitsuruog/clean-code-javascript/](https://github.com/mitsuruog/clean-code-javascript/)
+  - ![id](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Indonesia.png) **Indonesia**:
+  [andirkh/clean-code-javascript/](https://github.com/andirkh/clean-code-javascript/)
 
 **[⬆ back to top](#table-of-contents)**
